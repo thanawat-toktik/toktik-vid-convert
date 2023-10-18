@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "toktik-vid-convert"
+version = "0.1.0"
+description = "Converter microservice for Toktik by Thanawat"
+authors = ["Nawat Ngerncham <67263644+nngerncham@users.noreply.github.com>"]
+license = "MIT"
+packages = [{ include = "toktik_converter", from = "." }]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+fastapi = "^0.104.0"
+uvicorn = "^0.23.2"
+ffmpeg-python = "^0.2.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+serve = "toktik_converter:start"
