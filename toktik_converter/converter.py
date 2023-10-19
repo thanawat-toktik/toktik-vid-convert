@@ -1,4 +1,5 @@
 from pathlib import Path
+import shutil
 import os
 
 import boto3
@@ -7,13 +8,15 @@ from dotenv import load_dotenv
 import ffmpeg
 
 
-def download_file_from_s3(s3, object_name):
+def download_file_from_s3(client, object_name):
     file_name, file_extension = object_name.split(".")
     temp_folder = Path("/tmp") / file_name
     temp_folder.mkdir(parents=True, exist_ok=True)
 
     download_target = Path(f"{temp_folder}/{file_name}.{file_extension}")
-    s3.download_file(os.environ.get("S3_BUCKET_NAME"), object_name, download_target)
+    client.download_file(
+        os.environ.get("S3_RAW_BUCKET_NAME"), object_name, download_target
+    )
     return download_target
 
 
@@ -27,9 +30,21 @@ def convert_to_mp4(file_path: Path):
     return Path(f"{file_name}.mp4")
 
 
+def upload_converted_to_s3(client, file_path: Path):
+    client.upload_file(
+        file_path,
+        os.environ.get("S3_CONVERTED_BUCKET_NAME"),
+        file_path.name,
+        ExtraArgs={"ContentType": "video/mp4", "ACL": "public-read"},
+    )
+    temp_folder = file_path.parent
+    shutil.rmtree(temp_folder)
+    return True
+
+
 if __name__ == "__main__":
     load_dotenv()
-    s3 = boto3.client(
+    s3_client = boto3.client(
         "s3",
         region_name=os.environ.get("S3_REGION"),
         endpoint_url=os.environ.get("S3_RAW_ENDPOINT"),
@@ -37,5 +52,7 @@ if __name__ == "__main__":
         aws_secret_access_key=os.environ.get("S3_SECRET_ACCESS_KEY"),
         config=Config(s3={"addressing_style": "virtual"}, signature_version="v4"),
     )
-    downloaded_path = download_file_from_s3(s3, "IMG_6376.MOV")
+
+    downloaded_path = download_file_from_s3(s3_client, "IMG_6376_2.MOV")
     converted_path = convert_to_mp4(downloaded_path)
+    upload_converted_to_s3(s3_client, converted_path)
