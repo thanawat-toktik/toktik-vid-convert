@@ -7,11 +7,18 @@ from dotenv import load_dotenv
 
 from toktik_converter.converter import download_file_from_s3, convert_to_mp4, upload_converted_to_s3
 
-app = Celery("converter", broker=f"amqp://"
-                                 f"{os.environ.get('MQ_USERNAME', 'guest')}"
-                                 f":{os.environ.get('MQ_PASSWORD', 'guest')}"
-                                 f"@{os.environ.get('MQ_HOSTNAME', 'localhost')}"
-                                 f":{os.environ.get('MQ_PORT', '5673')}")
+
+def create_celery_app():
+    load_dotenv()
+    internal_app = Celery("converter", broker=f"amqp://"
+                                              f"{os.environ.get('MQ_USERNAME', 'guest')}"
+                                              f":{os.environ.get('MQ_PASSWORD', 'guest')}"
+                                              f"@{os.environ.get('MQ_HOSTNAME', 'localhost')}"
+                                              f":{os.environ.get('MQ_PORT', '5673')}")
+    return internal_app
+
+
+app = create_celery_app()
 
 
 @app.task

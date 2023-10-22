@@ -12,5 +12,8 @@ RUN pip install poetry==${POETRY_VERSION} && poetry install --no-root --no-direc
 COPY toktik_converter/ ./toktik_converter/
 RUN poetry install --no-dev
 
+# insalling ffmpeg
+RUN apt-get update && apt-get install -y ffmpeg
+
 # run the application
-CMD ["poetry", "run", "gunicorn", "toktik_converter.main:app", "uvicorn.workers.UvicornWorker"]
+CMD ["poetry", "run", "celery", "-A", "toktik_converter.tasks.app", "worker", "-l", "INFO"]
