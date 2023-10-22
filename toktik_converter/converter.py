@@ -5,7 +5,7 @@ import os
 import boto3
 from botocore.client import Config
 from dotenv import load_dotenv
-import ffmpeg
+from ffmpeg import FFmpeg
 
 
 def download_file_from_s3(client, object_name):
@@ -22,11 +22,11 @@ def download_file_from_s3(client, object_name):
 
 def convert_to_mp4(file_path: Path):
     file_name, file_extension = os.path.splitext(file_path)
-    ffmpeg.input(file_path).output(f"{file_name}.mp4", vcodec="libx264").run(quiet=True)
+    if file_extension == "mp4":
+        return file_path
 
-    if file_extension != "mp4":
-        os.remove(file_path)
-
+    ffmpeg = (FFmpeg().option("y").input(file_path).output(f"{file_name}.mp4", {"codec:v": "libx264"}))
+    ffmpeg.execute()
     return Path(f"{file_name}.mp4")
 
 
@@ -54,5 +54,8 @@ if __name__ == "__main__":
     )
 
     downloaded_path = download_file_from_s3(s3_client, "IMG_6376_2.MOV")
+    print("download done")
     converted_path = convert_to_mp4(downloaded_path)
+    print("convert done")
     upload_converted_to_s3(s3_client, converted_path)
+    print("upload done")
