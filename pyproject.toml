@@ -10,10 +10,12 @@ packages = [{ include = "toktik_converter", from = "." }]
 python = "^3.11"
 fastapi = "^0.104.0"
 uvicorn = "^0.23.2"
-ffmpeg-python = "^0.2.0"
 python-dotenv = "^1.0.0"
 boto3 = "^1.28.65"
 gunicorn = "^21.2.0"
+celery = "^5.3.4"
+python-ffmpeg = "^2.0.4"
+redis = "^5.0.1"
 
 
 [build-system]
