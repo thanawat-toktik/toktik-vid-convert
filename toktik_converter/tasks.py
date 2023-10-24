@@ -38,7 +38,7 @@ def do_conversion(object_name):
     try:
         downloaded_file = download_file_from_s3(client, object_name)
         converted_file = convert_to_mp4(downloaded_file)
-        res = upload_converted_to_s3(client, converted_file)
-        return res
+        return upload_converted_to_s3(client, converted_file)
     except Exception as e:
-        return str(e)
+        print(e)
+        return False

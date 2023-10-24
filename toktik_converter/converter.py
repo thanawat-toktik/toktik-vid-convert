@@ -13,7 +13,7 @@ def download_file_from_s3(client, object_name):
     temp_folder = Path("/tmp") / file_name
     temp_folder.mkdir(parents=True, exist_ok=True)
 
-    download_target = Path(f"{temp_folder}/{file_name}.{file_extension}")
+    download_target = temp_folder / Path(f"{file_name}.{file_extension}")
     client.download_file(
         os.environ.get("S3_RAW_BUCKET_NAME"), object_name, download_target
     )
@@ -22,12 +22,12 @@ def download_file_from_s3(client, object_name):
 
 def convert_to_mp4(file_path: Path):
     file_name, file_extension = os.path.splitext(file_path)
-    if file_extension == "mp4":
+    if file_extension == ".mp4":
         return file_path
 
     ffmpeg = (FFmpeg().option("y").input(file_path).output(f"{file_name}.mp4", {"codec:v": "libx264"}))
     ffmpeg.execute()
-    return Path(f"{file_name}.mp4")
+    return Path(f"/tmp/{file_name}/{file_name}.mp4")
 
 
 def upload_converted_to_s3(client, file_path: Path):
@@ -53,9 +53,8 @@ if __name__ == "__main__":
         config=Config(s3={"addressing_style": "virtual"}, signature_version="v4"),
     )
 
-    downloaded_path = download_file_from_s3(s3_client, "IMG_6376_2.MOV")
-    print("download done")
+    downloaded_path = download_file_from_s3(s3_client, "68cf7a01-f70a-437a-8ae8-9bbb103e89f3.mp4")
     converted_path = convert_to_mp4(downloaded_path)
-    print("convert done")
-    upload_converted_to_s3(s3_client, converted_path)
-    print("upload done")
+    # print("convert done")
+    # upload_converted_to_s3(s3_client, converted_path)
+    # print("upload done")
