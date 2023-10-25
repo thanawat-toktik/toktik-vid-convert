@@ -16,7 +16,7 @@ def download_file_from_s3(client, object_name):
     download_target = temp_folder / object_name
     print(download_target)
     client.download_file(
-        os.environ.get("S3_RAW_BUCKET_NAME"), object_name, download_target
+        os.environ.get("S3_BUCKET_NAME_RAW"), object_name, download_target
     )
     return download_target
 
@@ -35,7 +35,7 @@ def convert_to_mp4(file_path: Path):
 def upload_converted_to_s3(client, file_path: Path):
     client.upload_file(
         file_path,
-        os.environ.get("S3_CONVERTED_BUCKET_NAME"),
+        os.environ.get("S3_BUCKET_NAME_CONVERTED"),
         file_path.name,
         ExtraArgs={"ContentType": "video/mp4", "ACL": "public-read"},
     )
