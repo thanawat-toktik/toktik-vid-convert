@@ -13,10 +13,12 @@ def create_celery_app():
     internal_app = Celery("converter",
                           broker=f"redis://"
                                  f"{os.environ.get('REDIS_HOSTNAME', 'localhost')}"
-                                 f":{os.environ.get('REDIS_PORT', '6381')}",
+                                 f":{os.environ.get('REDIS_PORT', '6381')}"
+                                 f"/0",
                           backend=f"redis://"
                                   f"{os.environ.get('REDIS_HOSTNAME', 'localhost')}"
-                                  f":{os.environ.get('REDIS_PORT', '6381')}",
+                                  f":{os.environ.get('REDIS_PORT', '6381')}"
+                                  f"/0",
                           broker_connection_retry_on_startup=True)
     return internal_app
 
