@@ -9,11 +9,12 @@ from ffmpeg import FFmpeg
 
 
 def download_file_from_s3(client, object_name):
-    file_name, file_extension = object_name.split(".")
-    temp_folder = Path("/tmp") / file_name
+    file_name, file_extension = os.path.splitext(object_name)
+    temp_folder = Path(f"/tmp/{file_name}")
     temp_folder.mkdir(parents=True, exist_ok=True)
 
-    download_target = temp_folder / Path(f"{file_name}.{file_extension}")
+    download_target = temp_folder / object_name
+    print(download_target)
     client.download_file(
         os.environ.get("S3_RAW_BUCKET_NAME"), object_name, download_target
     )
@@ -25,9 +26,10 @@ def convert_to_mp4(file_path: Path):
     if file_extension == ".mp4":
         return file_path
 
-    ffmpeg = (FFmpeg().option("y").input(file_path).output(f"{file_name}.mp4", {"codec:v": "libx264"}))
+    target_path = file_path.parent / f"{file_name}.mp4"
+    ffmpeg = (FFmpeg().option("y").input(file_path).output(target_path, {"codec:v": "libx264"}))
     ffmpeg.execute()
-    return Path(f"/tmp/{file_name}/{file_name}.mp4")
+    return target_path
 
 
 def upload_converted_to_s3(client, file_path: Path):
@@ -53,8 +55,6 @@ if __name__ == "__main__":
         config=Config(s3={"addressing_style": "virtual"}, signature_version="v4"),
     )
 
-    downloaded_path = download_file_from_s3(s3_client, "68cf7a01-f70a-437a-8ae8-9bbb103e89f3.mp4")
+    downloaded_path = download_file_from_s3(s3_client, "cbb35c79-7128-4ef6-94a5-f92f59670c31.mov")
     converted_path = convert_to_mp4(downloaded_path)
-    # print("convert done")
-    # upload_converted_to_s3(s3_client, converted_path)
-    # print("upload done")
+    upload_converted_to_s3(s3_client, converted_path)
