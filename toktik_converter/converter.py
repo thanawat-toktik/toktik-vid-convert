@@ -9,7 +9,6 @@ from ffmpeg import FFmpeg
 
 
 def download_file_from_s3(client, object_name):
-    # print("Downloading file from S3")
     file_name, _ = os.path.splitext(object_name)
     temp_folder = Path(f"/tmp/{file_name}")
     temp_folder.mkdir(parents=True, exist_ok=True)
@@ -19,25 +18,21 @@ def download_file_from_s3(client, object_name):
     client.download_file(
         os.environ.get("S3_BUCKET_NAME_RAW"), object_name, download_target
     )
-    # print("Finished Downloading from S3")
     return download_target
 
 
 def convert_to_mp4(file_path: Path):
-    # print("Conversion Starts")
     file_name, file_extension = os.path.splitext(file_path)
     if file_extension == ".mp4":
         return file_path
 
-    target_path = file_path.parent / f"{file_name}.mp4"
+    target_path = Path(f"{file_name}.mp4")
     ffmpeg = (FFmpeg().option("y").input(file_path).output(target_path, {"codec:v": "libx264"}))
     ffmpeg.execute()
-    # print("Conversion Finsihed")
     return target_path
 
 
 def upload_converted_to_s3(client, file_path: Path):
-    # print("Uploading back to S3")
     client.upload_file(
         file_path,
         os.environ.get("S3_BUCKET_NAME_CONVERTED"),
@@ -46,7 +41,6 @@ def upload_converted_to_s3(client, file_path: Path):
     )
     temp_folder = file_path.parent
     shutil.rmtree(temp_folder)
-    # print("Upload finished")
     return True
 
 
