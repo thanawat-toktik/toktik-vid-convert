@@ -23,8 +23,8 @@ def download_file_from_s3(client, object_name):
 
 def convert_to_mp4(file_path: Path):
     file_name, file_extension = os.path.splitext(file_path)
-    if file_extension == ".mp4":
-        return file_path
+    if file_extension.lower() == ".mp4":
+        return Path(file_name + file_extension.lower())
 
     target_path = Path(f"{file_name}.mp4")
     ffmpeg = (FFmpeg().option("y").input(file_path).output(target_path, {"codec:v": "libx264"}))
@@ -55,6 +55,6 @@ if __name__ == "__main__":
         config=Config(s3={"addressing_style": "virtual"}, signature_version="v4"),
     )
 
-    downloaded_path = download_file_from_s3(s3_client, "cbb35c79-7128-4ef6-94a5-f92f59670c31.mov")
+    downloaded_path = download_file_from_s3(s3_client, "8b8cc051-4fa8-4519-801e-bfd164d1f9f3.MP4")
     converted_path = convert_to_mp4(downloaded_path)
     upload_converted_to_s3(s3_client, converted_path)
